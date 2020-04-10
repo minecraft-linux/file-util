@@ -13,4 +13,6 @@ public:
 
     static void mkdirRecursive(std::string const& path);
 
+    static bool readFile(std::string const& path, std::string &out);
+
 };
