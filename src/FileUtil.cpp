@@ -38,13 +38,17 @@ void FileUtil::mkdirRecursive(std::string const& path) {
 bool FileUtil::readFile(std::string const &path, std::string &out) {
     int fd = open(path.c_str(), O_RDONLY);
     if (fd < 0) {
+#ifndef NDEBUG
         Log::error("FileUtil", "readFile: not found: %s\n", path.c_str());
+#endif
         return false;
     }
     struct stat sr;
     if (fstat(fd, &sr) < 0 || (sr.st_mode & S_IFDIR)) {
         close(fd);
+#ifndef NDEBUG
         Log::error("FileUtil", "readFile: opening a directory: %s\n", path.c_str());
+#endif
         return false;
     }
     auto size = lseek(fd, 0, SEEK_END);
