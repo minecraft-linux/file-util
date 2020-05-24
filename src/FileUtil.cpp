@@ -12,8 +12,7 @@ bool FileUtil::exists(std::string const& path) {
 
 bool FileUtil::isDirectory(std::string const& path) {
     struct stat s;
-    stat(path.c_str(), &s);
-    return S_ISDIR(s.st_mode);
+    return !stat(path.c_str(), &s) && S_ISDIR(s.st_mode);
 }
 
 std::string FileUtil::getParent(std::string const& path) {
