@@ -10,10 +10,19 @@ bool FileUtil::exists(std::string const& path) {
     return access(path.c_str(), F_OK) == 0;
 }
 
+#ifdef __linux__
+// Workaround for linux/aarch64 (ubuntu 20.04, 5.4.0-1021-raspi) running armhf version
+// Failed to detect if some dirs are a directory
+#define stat stat64
+#endif
 bool FileUtil::isDirectory(std::string const& path) {
     struct stat s;
     return !stat(path.c_str(), &s) && S_ISDIR(s.st_mode);
 }
+#ifdef __linux__
+#undef stat
+#endif
+
 
 std::string FileUtil::getParent(std::string const& path) {
     auto iof = path.rfind('/');
