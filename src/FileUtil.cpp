@@ -28,9 +28,14 @@ std::string FileUtil::getParent(std::string const& path) {
     auto iof = path.rfind('/');
     if (iof == std::string::npos)
         return std::string();
+    bool endsWithSlash = iof == path.length() - 1;
     while (iof > 0 && path[iof - 1] == '/')
         iof--;
-    return path.substr(0, iof);
+    auto ret = path.substr(0, iof);
+    if(endsWithSlash) {
+        return FileUtil::getParent(ret);
+    }
+    return ret;
 }
 
 void FileUtil::mkdirRecursive(std::string const& path) {
