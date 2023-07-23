@@ -4,7 +4,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdexcept>
-#include "../../logger/include/log.h"
+#ifdef HAVE_LOGGER
+#include <log.h>
+#endif
 
 bool FileUtil::exists(std::string const& path) {
     return access(path.c_str(), F_OK) == 0;
@@ -51,7 +53,7 @@ void FileUtil::mkdirRecursive(std::string const& path) {
 bool FileUtil::readFile(std::string const &path, std::string &out) {
     int fd = open(path.c_str(), O_RDONLY);
     if (fd < 0) {
-#ifndef NDEBUG
+#if defined(HAVE_LOGGER) && !defined(NDEBUG)
         Log::error("FileUtil", "readFile: not found: %s\n", path.c_str());
 #endif
         return false;
@@ -59,14 +61,16 @@ bool FileUtil::readFile(std::string const &path, std::string &out) {
     struct stat sr;
     if (fstat(fd, &sr) < 0 || (sr.st_mode & S_IFDIR)) {
         close(fd);
-#ifndef NDEBUG
+#if defined(HAVE_LOGGER) && !defined(NDEBUG)
         Log::error("FileUtil", "readFile: opening a directory: %s\n", path.c_str());
 #endif
         return false;
     }
     auto size = lseek(fd, 0, SEEK_END);
     if (size == (off_t) -1) {
+#ifdef HAVE_LOGGER
         Log::error("FileUtil", "readFile: lseek error\n");
+#endif
         close(fd);
         return false;
     }
@@ -75,7 +79,9 @@ bool FileUtil::readFile(std::string const &path, std::string &out) {
     for (size_t o = 0; o < (size_t) size; ) {
         int res = read(fd, &out[o], size - o);
         if (res < 0) {
+#ifdef HAVE_LOGGER
             Log::error("FileUtil", "readFile: read error\n");
+#endif
             close(fd);
             return false;
         }
